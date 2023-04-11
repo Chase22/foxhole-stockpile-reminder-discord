@@ -11,11 +11,12 @@ import dev.kord.core.on
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import org.slf4j.LoggerFactory
 
 class EventListenerMap<T: Event>: HashMap<Snowflake, suspend T.() -> Unit>()
 
-class CommandRegistry(val kord: Kord, val stockpileDataStorage: StockpileDataStorage) {
+class CommandRegistry(val kord: Kord, val stockpileDataStorage: StockpileDataStorage, val clock: Clock) {
     private val logger = LoggerFactory.getLogger(CommandRegistry::class.java)
 
     private val commandListeners: EventListenerMap<ChatInputCommandInteractionCreateEvent> = EventListenerMap()

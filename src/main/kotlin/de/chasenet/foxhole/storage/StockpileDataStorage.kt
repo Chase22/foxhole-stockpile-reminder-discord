@@ -11,10 +11,11 @@ interface StockpileDataStorage {
     fun getAll(): List<Stockpile>
 
     fun get(code: String): Stockpile
+    fun removeByCode(code: String)
 }
 
 class InMemoryStorage: StockpileDataStorage {
-    val storage = mutableMapOf<String, Stockpile>()
+    private val storage = mutableMapOf<String, Stockpile>()
     override fun save(stockpile: Stockpile): Stockpile {
         storage[stockpile.code] = stockpile
         return stockpile
@@ -23,6 +24,10 @@ class InMemoryStorage: StockpileDataStorage {
     override fun getAll(): List<Stockpile> = storage.values.toList()
 
     override fun get(code: String): Stockpile = storage[code]!!
+
+    override fun removeByCode(code: String) {
+        storage.remove(code)
+    }
 
 }
 
