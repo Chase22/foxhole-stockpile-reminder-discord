@@ -35,17 +35,6 @@ suspend fun AutoCompleteInteractionCreateEvent.hexAutocompleteListener() {
             .map { Choice.StringChoice(it, Optional.invoke(), it) })
 }
 
-suspend fun CommandRegistry.initListStockpilesCommand() {
-    val command = kord.createGlobalChatInputCommand("list", "Lists all stockpiles")
-
-    registerCommandListener(command.id) {
-        interaction.deferPublicResponse().respond {
-            content = stockpileDataStorage.getAll()
-                .joinToString(System.lineSeparator()) { "${it.name}: ${it.location.hex} `${it.code}`" }
-        }
-    }
-}
-
 suspend fun ButtonInteractionCreateEvent.getCode(failureMessage: String): String? {
     return interaction.message.embeds.first().data.getFieldValue("code") ?: run {
         interaction.deferEphemeralResponse().respond {
