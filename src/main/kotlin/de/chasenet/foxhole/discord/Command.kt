@@ -43,3 +43,16 @@ suspend fun ButtonInteractionCreateEvent.getCode(failureMessage: String): String
         return null
     }
 }
+
+suspend fun CommandRegistry.initClearCommand() {
+    val command = kord.createGlobalChatInputCommand("clear", "Clears the channel")
+
+    registerCommandListener(command.id) {
+        interaction.channel.messages.collect {
+            it.delete()
+        }
+        interaction.deferEphemeralResponse().respond {
+            content = "Channel cleared"
+        }
+    }
+}

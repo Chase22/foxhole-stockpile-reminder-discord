@@ -12,6 +12,10 @@ interface StockpileDataStorage {
 
     fun get(code: String): Stockpile
     fun removeByCode(code: String)
+
+    fun update(code: String, update: Stockpile.() -> Stockpile) {
+        save(get(code).let(update))
+    }
 }
 
 class InMemoryStorage: StockpileDataStorage {

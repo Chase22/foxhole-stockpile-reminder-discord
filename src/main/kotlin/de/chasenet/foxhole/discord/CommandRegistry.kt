@@ -38,7 +38,7 @@ class CommandRegistry(val kord: Kord, val stockpileDataStorage: StockpileDataSto
     private val commands: List<suspend CommandRegistry.() -> Unit> = listOf(
         CommandRegistry::initPingCommand,
         CommandRegistry::initAddStockpileCommand,
-        CommandRegistry::initListStockpilesCommand,
+        CommandRegistry::initClearCommand
     )
 
     init {

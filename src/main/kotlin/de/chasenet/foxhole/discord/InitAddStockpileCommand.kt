@@ -6,6 +6,7 @@ import de.chasenet.foxhole.domain.Stockpile
 import dev.kord.common.DiscordTimestampStyle
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.toMessageFormat
+import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.AutoCompleteInteractionCreateEvent
 import dev.kord.rest.builder.interaction.integer
@@ -13,6 +14,8 @@ import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 
 private fun EmbedBuilder.embedStockpile(stockpile: Stockpile) {
     title = "${stockpile.location.hex} ${stockpile.location.city}"
@@ -62,7 +65,7 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
                     hex = interaction.command.strings["hex"]!!,
                     city = interaction.command.strings["city"] ?: "",
                 ),
-                lastReset = clock.now()
+                lastReset = clock.now().minus(2.days).minus(2.hours)
             )
         )
         interaction.deferPublicResponse().respond {
@@ -85,7 +88,18 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
     registerButtonListener(REFRESH_BUTTON_CUSTOM_ID) {
         getCode("Something went wrong trying to refresh the stockpile")?.also {
             val stockpile = stockpileDataStorage.get(it)
-            stockpileDataStorage.save(stockpile.copy(lastReset = clock.now()))
+
+            stockpile.refreshReminder?.let { messageId ->
+                kord.rest.channel.deleteMessage(messageId.channelId, messageId.messageId, "Stockpile was refreshed")
+            }
+
+            stockpileDataStorage.save(stockpile.copy(lastReset = clock.now(), refreshReminder = null)).let {
+                interaction.message.edit {
+                    embed {
+                        embedStockpile(it)
+                    }
+                }
+            }
             interaction.deferEphemeralResponse().respond {
                 content = "Refreshed stockpile ${stockpile.name}"
             }
