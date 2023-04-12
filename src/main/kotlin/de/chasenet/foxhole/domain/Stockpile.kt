@@ -10,10 +10,10 @@ data class Stockpile(
     val code: String,
     val name: String,
     val location: Location,
-    val lastReset: Instant,
+    val expireTime: Instant,
     val refreshReminder: MessageId? = null
 ) {
-    val expireTime: Instant = lastReset.plus(RESERVATION_EXPIRATION_TIME)
+    val lastReset: Instant = expireTime.minus(RESERVATION_EXPIRATION_TIME)
 }
 
 data class MessageId(

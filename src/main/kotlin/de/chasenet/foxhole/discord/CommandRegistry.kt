@@ -1,5 +1,6 @@
 package de.chasenet.foxhole.discord
 
+import de.chasenet.foxhole.storage.ChannelStorageAdapter
 import de.chasenet.foxhole.storage.StockpileDataStorage
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
@@ -14,9 +15,14 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.slf4j.LoggerFactory
 
-class EventListenerMap<T: Event>: HashMap<Snowflake, suspend T.() -> Unit>()
+class EventListenerMap<T : Event> : HashMap<Snowflake, suspend T.() -> Unit>()
 
-class CommandRegistry(val kord: Kord, val stockpileDataStorage: StockpileDataStorage, val clock: Clock) {
+class CommandRegistry(
+    val kord: Kord,
+    val stockpileDataStorage: StockpileDataStorage,
+    val clock: Clock,
+    val storageAdapter: ChannelStorageAdapter
+) {
     private val logger = LoggerFactory.getLogger(CommandRegistry::class.java)
 
     private val commandListeners: EventListenerMap<ChatInputCommandInteractionCreateEvent> = EventListenerMap()
@@ -38,7 +44,8 @@ class CommandRegistry(val kord: Kord, val stockpileDataStorage: StockpileDataSto
     private val commands: List<suspend CommandRegistry.() -> Unit> = listOf(
         CommandRegistry::initPingCommand,
         CommandRegistry::initAddStockpileCommand,
-        CommandRegistry::initClearCommand
+        CommandRegistry::initClearCommand,
+        CommandRegistry::initListCommand,
     )
 
     init {

@@ -53,7 +53,7 @@ val kordModule = module {
             stockpileDataStorage = get(),
             clock = get(),
             kord = get(),
-            reminderChannelId = getProperty<String>("reminderChannelId").toLong()
+            reminderChannelId = getProperty<String>("reminderChannelId").toLong(),
         )
     }.withOptions {
         createdAtStart()

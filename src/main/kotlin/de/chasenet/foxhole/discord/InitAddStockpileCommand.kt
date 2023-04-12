@@ -14,20 +14,16 @@ import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
-import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.hours
 
 private fun EmbedBuilder.embedStockpile(stockpile: Stockpile) {
-    title = "${stockpile.location.hex} ${stockpile.location.city}"
+    title = "${stockpile.location.hex}, ${stockpile.location.city}"
     field("name", true) { stockpile.name }
     field("code", true) { stockpile.code }
     field("expires at") {
-        stockpile.lastReset.plus(RESERVATION_EXPIRATION_TIME)
-            .toMessageFormat(DiscordTimestampStyle.LongDateTime)
+        stockpile.expireTime.toMessageFormat(DiscordTimestampStyle.LongDateTime)
     }
     field("in") {
-        stockpile.lastReset.plus(RESERVATION_EXPIRATION_TIME)
-            .toMessageFormat(DiscordTimestampStyle.RelativeTime)
+        stockpile.expireTime.toMessageFormat(DiscordTimestampStyle.RelativeTime)
     }
 }
 
@@ -52,7 +48,7 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
             autocomplete = true
         }
         string("city", "The city or region the stockpile is in") {
-            required = false
+            required = true
         }
     }
 
@@ -63,9 +59,9 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
                 name = interaction.command.strings["name"]!!,
                 location = Location(
                     hex = interaction.command.strings["hex"]!!,
-                    city = interaction.command.strings["city"] ?: "",
+                    city = interaction.command.strings["city"]!!,
                 ),
-                lastReset = clock.now().minus(2.days).minus(2.hours)
+                expireTime = clock.now().plus(RESERVATION_EXPIRATION_TIME)
             )
         )
         interaction.deferPublicResponse().respond {
@@ -93,7 +89,7 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
                 kord.rest.channel.deleteMessage(messageId.channelId, messageId.messageId, "Stockpile was refreshed")
             }
 
-            stockpileDataStorage.save(stockpile.copy(lastReset = clock.now(), refreshReminder = null)).let {
+            stockpileDataStorage.save(stockpile.copy(expireTime = clock.now().plus(RESERVATION_EXPIRATION_TIME), refreshReminder = null)).let {
                 interaction.message.edit {
                     embed {
                         embedStockpile(it)

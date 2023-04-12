@@ -47,6 +47,15 @@ suspend fun ButtonInteractionCreateEvent.getCode(failureMessage: String): String
     }
 }
 
+suspend fun CommandRegistry.initListCommand() {
+    val command = kord.createGlobalChatInputCommand("list", "Lists all stockpiles")
+    registerCommandListener(command.id) {
+        interaction.deferEphemeralResponse().respond {
+            content = storageAdapter.getStockpiles().toString()
+        }
+    }
+}
+
 suspend fun CommandRegistry.initClearCommand() {
     val command = kord.createGlobalChatInputCommand("clear", "Clears the channel")
 

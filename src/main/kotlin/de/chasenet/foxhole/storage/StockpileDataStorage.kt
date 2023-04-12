@@ -37,4 +37,11 @@ class InMemoryStorage: StockpileDataStorage {
 
 val storageModule = module {
     singleOf(::InMemoryStorage) { bind<StockpileDataStorage>() }
+
+    single {
+        ChannelStorageAdapter(
+            kord = get(),
+            channelId = getProperty<String>("reminderChannelId").toLong()
+        )
+    }
 }
