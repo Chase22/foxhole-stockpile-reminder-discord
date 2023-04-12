@@ -8,6 +8,9 @@ import dev.kord.core.behavior.interaction.suggest
 import dev.kord.core.event.interaction.AutoCompleteInteractionCreateEvent
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.interaction.string
+import dev.kord.rest.json.request.BulkDeleteRequest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 
 suspend fun CommandRegistry.initPingCommand() {
     val command = kord.createGlobalChatInputCommand("ping", "Pings people") {
@@ -48,9 +51,10 @@ suspend fun CommandRegistry.initClearCommand() {
     val command = kord.createGlobalChatInputCommand("clear", "Clears the channel")
 
     registerCommandListener(command.id) {
-        interaction.channel.messages.collect {
-            it.delete()
-        }
+        kord.rest.channel.bulkDelete(interaction.channelId,
+            BulkDeleteRequest(interaction.channel.messages.map { it.id }.toList())
+        )
+
         interaction.deferEphemeralResponse().respond {
             content = "Channel cleared"
         }
