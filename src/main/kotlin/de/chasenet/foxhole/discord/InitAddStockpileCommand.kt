@@ -110,9 +110,9 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
         getCode("Something went wrong trying to delete the stockpile")?.also {
             val stockpile = stockpileDataStorage.get(it)
             stockpileDataStorage.removeByCode(it)
+            interaction.message.delete("Stockpile removed by ${interaction.data.user.value!!.username}")
             interaction.deferPublicResponse()
                 .respond { content = "${interaction.data.user.value!!.username} removed ${stockpile.name}" }
-            interaction.deferPublicMessageUpdate().delete()
         }
     }
 }
