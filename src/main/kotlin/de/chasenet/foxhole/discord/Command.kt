@@ -12,23 +12,6 @@ import dev.kord.rest.json.request.BulkDeleteRequest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 
-suspend fun CommandRegistry.initPingCommand() {
-    val command = kord.createGlobalChatInputCommand("ping", "Pings people") {
-        string("hex", "The stockpile hex") {
-            autocomplete = true
-        }
-    }
-
-    registerCommandListener(command.id) {
-        val response = interaction.deferPublicResponse()
-        response.respond {
-            content = "pong! ${interaction.command.strings["hex"]}"
-        }
-    }
-
-    registerAutoCompleteListener(command.id, AutoCompleteInteractionCreateEvent::hexAutocompleteListener)
-}
-
 suspend fun AutoCompleteInteractionCreateEvent.hexAutocompleteListener() {
     val prefix = interaction.command.strings["hex"] ?: ""
     interaction.suggest(

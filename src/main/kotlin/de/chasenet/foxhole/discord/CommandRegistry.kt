@@ -40,7 +40,6 @@ class CommandRegistry(
     }
 
     private val commands: List<suspend CommandRegistry.() -> Unit> = listOf(
-        CommandRegistry::initPingCommand,
         CommandRegistry::initAddStockpileCommand,
         CommandRegistry::initClearCommand,
         CommandRegistry::initListCommand,
