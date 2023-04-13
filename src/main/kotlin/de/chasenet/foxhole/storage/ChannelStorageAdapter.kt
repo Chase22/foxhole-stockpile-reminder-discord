@@ -1,6 +1,7 @@
 package de.chasenet.foxhole.storage
 
 import de.chasenet.foxhole.domain.Location
+import de.chasenet.foxhole.domain.MessageId.Companion.toMessageId
 import de.chasenet.foxhole.domain.Stockpile
 import dev.kord.common.entity.DiscordEmbed
 import dev.kord.common.entity.DiscordMessage
@@ -25,6 +26,7 @@ class ChannelStorageAdapter(
                 }
 
                 Stockpile(
+                    messageId = message.toMessageId(),
                     code = fields.getFieldByName("code")!!,
                     name = fields.getFieldByName("name")!!,
                     location = location,

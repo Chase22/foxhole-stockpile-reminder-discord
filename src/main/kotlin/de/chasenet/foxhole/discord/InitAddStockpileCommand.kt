@@ -1,15 +1,16 @@
 package de.chasenet.foxhole.discord
 
 import de.chasenet.foxhole.domain.Location
+import de.chasenet.foxhole.domain.MessageId
 import de.chasenet.foxhole.domain.RESERVATION_EXPIRATION_TIME
 import de.chasenet.foxhole.domain.Stockpile
 import de.chasenet.foxhole.i18n
 import dev.kord.common.DiscordTimestampStyle
 import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.Snowflake
 import dev.kord.common.toMessageFormat
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.interaction.response.respond
-import dev.kord.core.event.interaction.AutoCompleteInteractionCreateEvent
 import dev.kord.rest.builder.interaction.integer
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.message.EmbedBuilder
@@ -26,7 +27,7 @@ const val COMMAND_CITY_FIELD = "city"
 private const val REFRESH_BUTTON_CUSTOM_ID = "refreshButton"
 private const val DELETE_BUTTON_CUSTOM_ID = "deleteButton"
 
-private fun EmbedBuilder.embedStockpile(stockpile: Stockpile) {
+fun EmbedBuilder.embedStockpile(stockpile: Stockpile) {
     title = "${stockpile.location.hex}, ${stockpile.location.city}"
     field(COMMAND_NAME_FIELD, true) { stockpile.name }
     field(COMMAND_CODE_FIELD, true) { stockpile.code }
@@ -68,6 +69,7 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
 
     registerCommandListener(command.id) {
         val stockpile = Stockpile(
+            messageId = MessageId(Snowflake(0), Snowflake(0)),
             code = interaction.command.integers[COMMAND_CODE_FIELD].toString(),
             name = interaction.command.strings[COMMAND_NAME_FIELD]!!,
             location = Location(
@@ -126,9 +128,7 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
 
             if (stockpile == null) {
                 interaction.deferEphemeralResponse().respond {
-                    embed {
-                        title = "Stockpile to delete was not found"
-                    }
+                    content = "Stockpile to delete was not found"
                 }
                 return@also
             }
@@ -145,7 +145,8 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
             interaction.message.delete("Stockpile removed by ${interaction.data.user.value!!.username}")
             interaction.deferPublicResponse()
                 .respond {
-                    content = "${interaction.data.user.value!!.username} removed Stockpile ${stockpile.name} in ${stockpile.location.city}, ${stockpile.location.hex}"
+                    content =
+                        "${interaction.data.user.value!!.username} removed Stockpile ${stockpile.name} in ${stockpile.location.city}, ${stockpile.location.hex}"
                 }
         }
     }

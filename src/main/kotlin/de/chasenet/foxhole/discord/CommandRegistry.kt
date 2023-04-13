@@ -38,6 +38,7 @@ class CommandRegistry(
         CommandRegistry::initAddStockpileCommand,
         CommandRegistry::initClearCommand,
         CommandRegistry::initListCommand,
+        CommandRegistry::initEditCommand,
     )
 
     init {
@@ -51,6 +52,7 @@ class CommandRegistry(
             kord.on<AutoCompleteInteractionCreateEvent> {
                 when(interaction.command.options.entries.first { it.value.focused }.key) {
                     COMMAND_HEX_FIELD -> hexAutocompleteListener()
+                    COMMAND_CODE_FIELD -> codeAutocompleteListener()
                 }
             }
 

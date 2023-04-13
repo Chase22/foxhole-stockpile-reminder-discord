@@ -7,14 +7,13 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
 data class Stockpile(
+    val messageId: MessageId,
     val code: String,
     val name: String,
     val location: Location,
     val expireTime: Instant,
     val refreshReminder: MessageId? = null
-) {
-    val lastReset: Instant = expireTime.minus(RESERVATION_EXPIRATION_TIME)
-}
+)
 
 data class MessageId(
     val channelId: Snowflake,
