@@ -29,7 +29,7 @@ class StockpileRefreshChecker(
                 val reminders = channelStorageAdapter.getReminders()
 
                 channelStorageAdapter.getStockpiles().filter {
-                    (it.expireTime.minus(2.days).minus(2.hours) - clock.now()).inWholeHours < 4
+                    (it.expireTime - clock.now()).inWholeHours < 4
                 }.forEach {
                     if (reminders.containsKey(it.code)) return@forEach
                     kord.rest.channel.createMessage(Snowflake(reminderChannelId)) {

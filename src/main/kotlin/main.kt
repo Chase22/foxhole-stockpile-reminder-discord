@@ -46,7 +46,7 @@ val kordModule = module {
     single {
         ChannelStorageAdapter(
             kord = get(),
-            channelId = getProperty<String>("reminderChannelId").toLong()
+            channelId = getProperty<String>("fostorChannelId").toLong()
         )
     }
 
@@ -59,7 +59,7 @@ val kordModule = module {
             channelStorageAdapter = get(),
             clock = get(),
             kord = get(),
-            reminderChannelId = getProperty<String>("reminderChannelId").toLong(),
+            reminderChannelId = getProperty<String>("fostorChannelId").toLong(),
         )
     }.withOptions {
         createdAtStart()
