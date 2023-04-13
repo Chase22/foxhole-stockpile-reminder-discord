@@ -24,15 +24,10 @@ class CommandRegistry(
     private val logger = LoggerFactory.getLogger(CommandRegistry::class.java)
 
     private val commandListeners: EventListenerMap<ChatInputCommandInteractionCreateEvent> = EventListenerMap()
-    private val autocompleteListeners: EventListenerMap<AutoCompleteInteractionCreateEvent> = EventListenerMap()
     private val buttonListeners: MutableMap<String, suspend ButtonInteractionCreateEvent.() -> Unit> = mutableMapOf()
 
     fun registerCommandListener(id: Snowflake, listener: suspend ChatInputCommandInteractionCreateEvent.() -> Unit) {
         commandListeners[id] = listener
-    }
-
-    fun registerAutoCompleteListener(id: Snowflake, listener: suspend AutoCompleteInteractionCreateEvent.() -> Unit) {
-        autocompleteListeners[id] = listener
     }
 
     fun registerButtonListener(id: String, listener: suspend ButtonInteractionCreateEvent.() -> Unit) {
@@ -54,7 +49,9 @@ class CommandRegistry(
                 commandListeners[interaction.command.rootId]?.invoke(this)
             }
             kord.on<AutoCompleteInteractionCreateEvent> {
-                autocompleteListeners[interaction.command.rootId]?.invoke(this)
+                when(interaction.command.options.entries.first { it.value.focused }.key) {
+                    COMMAND_HEX_FIELD -> hexAutocompleteListener()
+                }
             }
 
             kord.on<ButtonInteractionCreateEvent> {

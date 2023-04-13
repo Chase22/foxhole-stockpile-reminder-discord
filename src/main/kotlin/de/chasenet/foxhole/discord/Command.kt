@@ -1,12 +1,14 @@
 package de.chasenet.foxhole.discord
 
 import de.chasenet.foxhole.domain.HEXES
+import de.chasenet.foxhole.i18n
 import dev.kord.common.entity.Choice
 import dev.kord.common.entity.optional.Optional
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.behavior.interaction.suggest
 import dev.kord.core.event.interaction.AutoCompleteInteractionCreateEvent
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
+import dev.kord.rest.builder.interaction.integer
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.json.request.BulkDeleteRequest
 import kotlinx.coroutines.flow.map
@@ -27,6 +29,32 @@ suspend fun ButtonInteractionCreateEvent.getCode(failureMessage: String): String
             content = failureMessage
         }
         return null
+    }
+}
+
+suspend fun CommandRegistry.initEditCommand() {
+    kord.createGlobalChatInputCommand("edit", i18n.EDIT_COMMAND_DESCRIPTION.default) {
+        integer(COMMAND_CODE_FIELD, i18n.INIT_COMMAND_CODE.default) {
+            descriptionLocalizations = i18n.INIT_COMMAND_CODE.translations.toMutableMap()
+            required = true
+            maxValue = 999999
+            minValue = 100000
+        }
+        string(COMMAND_NAME_FIELD, i18n.INIT_COMMAND_NAME.default) {
+            descriptionLocalizations = i18n.INIT_COMMAND_NAME.translations.toMutableMap()
+            required = true
+            minLength = 3
+
+        }
+        string(COMMAND_HEX_FIELD, i18n.INIT_COMMAND_HEX.default) {
+            descriptionLocalizations = i18n.INIT_COMMAND_HEX.translations.toMutableMap()
+            required = true
+            autocomplete = true
+        }
+        string(COMMAND_CITY_FIELD, i18n.INIT_COMMAND_CITY.default) {
+            descriptionLocalizations = i18n.INIT_COMMAND_CITY.translations.toMutableMap()
+            required = true
+        }
     }
 }
 

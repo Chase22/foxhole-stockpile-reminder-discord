@@ -13,6 +13,8 @@ object i18n {
 
     val REFRESH_BUTTON_LABEL = TranslationString.of("refresh")
     val DELETE_BUTTON_LABEL = TranslationString.of("delete")
+
+    val EDIT_COMMAND_DESCRIPTION = TranslationString.of("Edits and existing stockpile")
 }
 
 data class TranslationString(

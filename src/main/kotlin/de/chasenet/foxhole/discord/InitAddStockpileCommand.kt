@@ -16,19 +16,20 @@ import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
 
-private const val INIT_COMMAND_CODE_FIELD = "code"
-private const val INIT_COMMAND_NAME_FIELD = "name"
 private const val INIT_COMMAND_NAME = "add"
-private const val INIT_COMMAND_HEX_FIELD = "hex"
-private const val INIT_COMMAND_CITY_FIELD = "city"
+
+const val COMMAND_CODE_FIELD = "code"
+const val COMMAND_NAME_FIELD = "name"
+const val COMMAND_HEX_FIELD = "hex"
+const val COMMAND_CITY_FIELD = "city"
 
 private const val REFRESH_BUTTON_CUSTOM_ID = "refreshButton"
 private const val DELETE_BUTTON_CUSTOM_ID = "deleteButton"
 
 private fun EmbedBuilder.embedStockpile(stockpile: Stockpile) {
     title = "${stockpile.location.hex}, ${stockpile.location.city}"
-    field(INIT_COMMAND_NAME_FIELD, true) { stockpile.name }
-    field(INIT_COMMAND_CODE_FIELD, true) { stockpile.code }
+    field(COMMAND_NAME_FIELD, true) { stockpile.name }
+    field(COMMAND_CODE_FIELD, true) { stockpile.code }
     field("expires at") {
         stockpile.expireTime.toMessageFormat(DiscordTimestampStyle.LongDateTime)
     }
@@ -42,24 +43,24 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
     val command = kord.createGlobalChatInputCommand(INIT_COMMAND_NAME, i18n.INIT_COMMAND_DESCRIPTION.default) {
         descriptionLocalizations = i18n.INIT_COMMAND_DESCRIPTION.translations
 
-        integer(INIT_COMMAND_CODE_FIELD, i18n.INIT_COMMAND_CODE.default) {
+        integer(COMMAND_CODE_FIELD, i18n.INIT_COMMAND_CODE.default) {
             descriptionLocalizations = i18n.INIT_COMMAND_CODE.translations.toMutableMap()
             required = true
             maxValue = 999999
             minValue = 100000
         }
-        string(INIT_COMMAND_NAME_FIELD, i18n.INIT_COMMAND_NAME.default) {
+        string(COMMAND_NAME_FIELD, i18n.INIT_COMMAND_NAME.default) {
             descriptionLocalizations = i18n.INIT_COMMAND_NAME.translations.toMutableMap()
             required = true
             minLength = 3
 
         }
-        string(INIT_COMMAND_HEX_FIELD, i18n.INIT_COMMAND_HEX.default) {
+        string(COMMAND_HEX_FIELD, i18n.INIT_COMMAND_HEX.default) {
             descriptionLocalizations = i18n.INIT_COMMAND_HEX.translations.toMutableMap()
             required = true
             autocomplete = true
         }
-        string(INIT_COMMAND_CITY_FIELD, i18n.INIT_COMMAND_CITY.default) {
+        string(COMMAND_CITY_FIELD, i18n.INIT_COMMAND_CITY.default) {
             descriptionLocalizations = i18n.INIT_COMMAND_CITY.translations.toMutableMap()
             required = true
         }
@@ -67,11 +68,11 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
 
     registerCommandListener(command.id) {
         val stockpile = Stockpile(
-            code = interaction.command.integers[INIT_COMMAND_CODE_FIELD].toString(),
-            name = interaction.command.strings[INIT_COMMAND_NAME_FIELD]!!,
+            code = interaction.command.integers[COMMAND_CODE_FIELD].toString(),
+            name = interaction.command.strings[COMMAND_NAME_FIELD]!!,
             location = Location(
-                hex = interaction.command.strings[INIT_COMMAND_HEX_FIELD]!!,
-                city = interaction.command.strings[INIT_COMMAND_CITY_FIELD]!!,
+                hex = interaction.command.strings[COMMAND_HEX_FIELD]!!,
+                city = interaction.command.strings[COMMAND_CITY_FIELD]!!,
             ),
             expireTime = clock.now().plus(RESERVATION_EXPIRATION_TIME)
         )
@@ -96,8 +97,6 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
             }
         }
     }
-
-    registerAutoCompleteListener(command.id, AutoCompleteInteractionCreateEvent::hexAutocompleteListener)
 
     registerButtonListener(REFRESH_BUTTON_CUSTOM_ID) {
         getCode("Something went wrong trying to refresh the stockpile")?.also { stockpileCode ->
