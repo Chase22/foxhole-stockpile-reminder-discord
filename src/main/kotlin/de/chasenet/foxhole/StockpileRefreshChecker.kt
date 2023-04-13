@@ -38,7 +38,8 @@ class StockpileRefreshChecker(
                             description =
                                 "A stockpile needs to be refreshed. Just renew the reservation in foxhole and click the refresh button under the stockpile"
                             field("name", false) { it.name }
-                            field("hex", true) { it.location.hex }
+                            field("code", true) { it.code }
+                            field("hex", false) { it.location.hex }
                             field("city", true) { it.location.city }
                         }
                     }

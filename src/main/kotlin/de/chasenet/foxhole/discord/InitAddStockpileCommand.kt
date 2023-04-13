@@ -76,6 +76,12 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
             expireTime = clock.now().plus(RESERVATION_EXPIRATION_TIME)
         )
 
+        if (storageAdapter.getStockpile(stockpile.code) != null) {
+            interaction.deferEphemeralResponse().respond {
+                content = "There's already a stockpile with code ${stockpile.code}"
+            }
+        }
+
         interaction.deferPublicResponse().respond {
             embed {
                 embedStockpile(stockpile)
@@ -140,8 +146,7 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
             interaction.message.delete("Stockpile removed by ${interaction.data.user.value!!.username}")
             interaction.deferPublicResponse()
                 .respond {
-                    content = "${interaction.data.user.value!!.username} removed ${stockpile.name}"
-
+                    content = "${interaction.data.user.value!!.username} removed Stockpile ${stockpile.name} in ${stockpile.location.city}, ${stockpile.location.hex}"
                 }
         }
     }
