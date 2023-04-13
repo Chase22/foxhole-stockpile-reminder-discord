@@ -3,6 +3,7 @@ package de.chasenet.foxhole.discord
 import de.chasenet.foxhole.domain.Location
 import de.chasenet.foxhole.domain.RESERVATION_EXPIRATION_TIME
 import de.chasenet.foxhole.domain.Stockpile
+import de.chasenet.foxhole.i18n
 import dev.kord.common.DiscordTimestampStyle
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.toMessageFormat
@@ -15,10 +16,19 @@ import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.rest.builder.message.modify.embed
 
+private const val INIT_COMMAND_CODE_FIELD = "code"
+private const val INIT_COMMAND_NAME_FIELD = "name"
+private const val INIT_COMMAND_NAME = "add"
+private const val INIT_COMMAND_HEX_FIELD = "hex"
+private const val INIT_COMMAND_CITY_FIELD = "city"
+
+private const val REFRESH_BUTTON_CUSTOM_ID = "refreshButton"
+private const val DELETE_BUTTON_CUSTOM_ID = "deleteButton"
+
 private fun EmbedBuilder.embedStockpile(stockpile: Stockpile) {
     title = "${stockpile.location.hex}, ${stockpile.location.city}"
-    field("name", true) { stockpile.name }
-    field("code", true) { stockpile.code }
+    field(INIT_COMMAND_NAME_FIELD, true) { stockpile.name }
+    field(INIT_COMMAND_CODE_FIELD, true) { stockpile.code }
     field("expires at") {
         stockpile.expireTime.toMessageFormat(DiscordTimestampStyle.LongDateTime)
     }
@@ -27,38 +37,41 @@ private fun EmbedBuilder.embedStockpile(stockpile: Stockpile) {
     }
 }
 
-private const val REFRESH_BUTTON_CUSTOM_ID = "refreshButton"
-private const val DELETE_BUTTON_CUSTOM_ID = "deleteButton"
-
 suspend fun CommandRegistry.initAddStockpileCommand() {
 
-    val command = kord.createGlobalChatInputCommand("add", "Adds a stockpile") {
-        integer("code", "The stockpile code") {
+    val command = kord.createGlobalChatInputCommand(INIT_COMMAND_NAME, i18n.INIT_COMMAND_DESCRIPTION.default) {
+        descriptionLocalizations = i18n.INIT_COMMAND_DESCRIPTION.translations
+
+        integer(INIT_COMMAND_CODE_FIELD, i18n.INIT_COMMAND_CODE.default) {
+            descriptionLocalizations = i18n.INIT_COMMAND_CODE.translations.toMutableMap()
             required = true
             maxValue = 999999
             minValue = 100000
         }
-        string("name", "The stockpile name") {
+        string(INIT_COMMAND_NAME_FIELD, i18n.INIT_COMMAND_NAME.default) {
+            descriptionLocalizations = i18n.INIT_COMMAND_NAME.translations.toMutableMap()
             required = true
             minLength = 3
 
         }
-        string("hex", "The hex the stockpile is in") {
+        string(INIT_COMMAND_HEX_FIELD, i18n.INIT_COMMAND_HEX.default) {
+            descriptionLocalizations = i18n.INIT_COMMAND_HEX.translations.toMutableMap()
             required = true
             autocomplete = true
         }
-        string("city", "The city or region the stockpile is in") {
+        string(INIT_COMMAND_CITY_FIELD, i18n.INIT_COMMAND_CITY.default) {
+            descriptionLocalizations = i18n.INIT_COMMAND_CITY.translations.toMutableMap()
             required = true
         }
     }
 
     registerCommandListener(command.id) {
         val stockpile = Stockpile(
-            code = interaction.command.integers["code"].toString(),
-            name = interaction.command.strings["name"]!!,
+            code = interaction.command.integers[INIT_COMMAND_CODE_FIELD].toString(),
+            name = interaction.command.strings[INIT_COMMAND_NAME_FIELD]!!,
             location = Location(
-                hex = interaction.command.strings["hex"]!!,
-                city = interaction.command.strings["city"]!!,
+                hex = interaction.command.strings[INIT_COMMAND_HEX_FIELD]!!,
+                city = interaction.command.strings[INIT_COMMAND_CITY_FIELD]!!,
             ),
             expireTime = clock.now().plus(RESERVATION_EXPIRATION_TIME)
         )
@@ -69,10 +82,10 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
             }
             actionRow {
                 interactionButton(ButtonStyle.Primary, REFRESH_BUTTON_CUSTOM_ID) {
-                    label = "refresh"
+                    label = i18n.REFRESH_BUTTON_LABEL.default
                 }
                 interactionButton(ButtonStyle.Danger, DELETE_BUTTON_CUSTOM_ID) {
-                    label = "delete"
+                    label = i18n.DELETE_BUTTON_LABEL.default
                 }
             }
         }
@@ -126,7 +139,10 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
 
             interaction.message.delete("Stockpile removed by ${interaction.data.user.value!!.username}")
             interaction.deferPublicResponse()
-                .respond { content = "${interaction.data.user.value!!.username} removed ${stockpile.name}" }
+                .respond {
+                    content = "${interaction.data.user.value!!.username} removed ${stockpile.name}"
+
+                }
         }
     }
 }

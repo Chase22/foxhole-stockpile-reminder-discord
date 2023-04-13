@@ -21,6 +21,7 @@ dependencies {
     implementation("io.insert-koin:koin-core-jvm:3.4.0")
 
     implementation("ch.qos.logback:logback-classic:1.4.6")
+
     testImplementation(kotlin("test"))
 }
 
