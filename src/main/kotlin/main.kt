@@ -1,6 +1,6 @@
 import de.chasenet.foxhole.StockpileRefreshChecker
 import de.chasenet.foxhole.discord.CommandRegistry
-import de.chasenet.foxhole.storage.storageModule
+import de.chasenet.foxhole.storage.ChannelStorageAdapter
 import dev.kord.core.Kord
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
@@ -22,7 +22,6 @@ suspend fun main() {
         environmentProperties()
         modules(
             kordModule,
-            storageModule
         )
         createEagerInstances()
     }
@@ -44,13 +43,20 @@ val kordModule = module {
         Clock.System
     }.bind(Clock::class)
 
+    single {
+        ChannelStorageAdapter(
+            kord = get(),
+            channelId = getProperty<String>("reminderChannelId").toLong()
+        )
+    }
+
     singleOf(::CommandRegistry).withOptions {
         createdAtStart()
     }
 
     single {
         StockpileRefreshChecker(
-            stockpileDataStorage = get(),
+            channelStorageAdapter = get(),
             clock = get(),
             kord = get(),
             reminderChannelId = getProperty<String>("reminderChannelId").toLong(),

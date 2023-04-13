@@ -1,7 +1,6 @@
 package de.chasenet.foxhole.discord
 
 import de.chasenet.foxhole.storage.ChannelStorageAdapter
-import de.chasenet.foxhole.storage.StockpileDataStorage
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.event.Event
@@ -19,7 +18,6 @@ class EventListenerMap<T : Event> : HashMap<Snowflake, suspend T.() -> Unit>()
 
 class CommandRegistry(
     val kord: Kord,
-    val stockpileDataStorage: StockpileDataStorage,
     val clock: Clock,
     val storageAdapter: ChannelStorageAdapter
 ) {

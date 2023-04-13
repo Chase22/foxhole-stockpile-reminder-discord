@@ -53,17 +53,16 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
     }
 
     registerCommandListener(command.id) {
-        val stockpile = this@initAddStockpileCommand.stockpileDataStorage.save(
-            Stockpile(
-                code = interaction.command.integers["code"].toString(),
-                name = interaction.command.strings["name"]!!,
-                location = Location(
-                    hex = interaction.command.strings["hex"]!!,
-                    city = interaction.command.strings["city"]!!,
-                ),
-                expireTime = clock.now().plus(RESERVATION_EXPIRATION_TIME)
-            )
+        val stockpile = Stockpile(
+            code = interaction.command.integers["code"].toString(),
+            name = interaction.command.strings["name"]!!,
+            location = Location(
+                hex = interaction.command.strings["hex"]!!,
+                city = interaction.command.strings["city"]!!,
+            ),
+            expireTime = clock.now().plus(RESERVATION_EXPIRATION_TIME)
         )
+
         interaction.deferPublicResponse().respond {
             embed {
                 embedStockpile(stockpile)
@@ -82,18 +81,19 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
     registerAutoCompleteListener(command.id, AutoCompleteInteractionCreateEvent::hexAutocompleteListener)
 
     registerButtonListener(REFRESH_BUTTON_CUSTOM_ID) {
-        getCode("Something went wrong trying to refresh the stockpile")?.also {
-            val stockpile = stockpileDataStorage.get(it)
+        getCode("Something went wrong trying to refresh the stockpile")?.also { stockpileCode ->
+            val stockpile = storageAdapter.getStockpile(stockpileCode)!!.copy(
+                expireTime = clock.now().plus(RESERVATION_EXPIRATION_TIME)
+            )
 
-            stockpile.refreshReminder?.let { messageId ->
-                kord.rest.channel.deleteMessage(messageId.channelId, messageId.messageId, "Stockpile was refreshed")
-            }
+            storageAdapter.getReminder(stockpileCode)
+                ?.let { reminder ->
+                    kord.rest.channel.deleteMessage(reminder.channelId, reminder.id, "Stockpile was refreshed")
+                }
 
-            stockpileDataStorage.save(stockpile.copy(expireTime = clock.now().plus(RESERVATION_EXPIRATION_TIME), refreshReminder = null)).let {
-                interaction.message.edit {
-                    embed {
-                        embedStockpile(it)
-                    }
+            interaction.message.edit {
+                embed {
+                    embedStockpile(stockpile)
                 }
             }
             interaction.deferEphemeralResponse().respond {
@@ -104,8 +104,26 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
 
     registerButtonListener(DELETE_BUTTON_CUSTOM_ID) {
         getCode("Something went wrong trying to delete the stockpile")?.also {
-            val stockpile = stockpileDataStorage.get(it)
-            stockpileDataStorage.removeByCode(it)
+            val stockpile = storageAdapter.getStockpile(it)
+
+            if (stockpile == null) {
+                interaction.deferEphemeralResponse().respond {
+                    embed {
+                        title = "Stockpile to delete was not found"
+                    }
+                }
+                return@also
+            }
+
+            storageAdapter.getReminder(it)
+                ?.let { reminder ->
+                    kord.rest.channel.deleteMessage(
+                        reminder.channelId,
+                        reminder.id,
+                        "Stockpile was deleted"
+                    )
+                }
+
             interaction.message.delete("Stockpile removed by ${interaction.data.user.value!!.username}")
             interaction.deferPublicResponse()
                 .respond { content = "${interaction.data.user.value!!.username} removed ${stockpile.name}" }
