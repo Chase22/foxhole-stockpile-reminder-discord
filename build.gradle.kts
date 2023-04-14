@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.chasenet"
-version = "1.0.0"
+version = "1.0.1"
 
 val repository = loadProperties("local.properties")["repository"]
 
