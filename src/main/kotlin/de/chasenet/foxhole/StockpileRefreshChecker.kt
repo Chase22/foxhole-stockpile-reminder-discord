@@ -8,8 +8,6 @@ import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 class StockpileRefreshChecker(

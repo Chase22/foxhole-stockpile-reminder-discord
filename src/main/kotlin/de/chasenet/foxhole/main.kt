@@ -5,6 +5,9 @@ import de.chasenet.foxhole.storage.ChannelStorageAdapter
 import dev.kord.core.Kord
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,11 +32,12 @@ suspend fun main() {
             kordModule,
         )
         createEagerInstances()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            startServer(koin.get())
+        }
     }
 
-    CoroutineScope(Dispatchers.IO).launch {
-        startServer()
-    }
 
     application.koin.get<Kord>().login {
         // we need to specify this to receive the content of messages
@@ -47,6 +51,10 @@ val kordModule = module {
             Kord(getProperty("kordToken"))
         }
     }
+
+    single {
+        PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+    }.bind(MeterRegistry::class)
 
     single {
         Clock.System

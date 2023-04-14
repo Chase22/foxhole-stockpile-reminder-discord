@@ -8,6 +8,7 @@ import dev.kord.core.event.interaction.AutoCompleteInteractionCreateEvent
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
+import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,7 +20,8 @@ class EventListenerMap<T : Event> : HashMap<Snowflake, suspend T.() -> Unit>()
 class CommandRegistry(
     val kord: Kord,
     val clock: Clock,
-    val storageAdapter: ChannelStorageAdapter
+    val storageAdapter: ChannelStorageAdapter,
+    val meterRegistry: MeterRegistry
 ) {
     private val logger = LoggerFactory.getLogger(CommandRegistry::class.java)
 
@@ -45,6 +47,7 @@ class CommandRegistry(
             commands.forEach { it() }
 
             kord.on<ChatInputCommandInteractionCreateEvent> {
+                meterRegistry.counter("command_invoked", "command", interaction.command.rootName)
                 commandListeners[interaction.command.rootId]?.invoke(this)
             }
             kord.on<AutoCompleteInteractionCreateEvent> {
@@ -55,6 +58,7 @@ class CommandRegistry(
             }
 
             kord.on<ButtonInteractionCreateEvent> {
+                meterRegistry.counter("button_interaction", "button", interaction.componentId)
                 buttonListeners[interaction.componentId]?.invoke(this)
             }
         }
