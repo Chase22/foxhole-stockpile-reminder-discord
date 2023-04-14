@@ -7,9 +7,6 @@ import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.rest.builder.interaction.integer
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.message.modify.embed
-import dev.kord.rest.json.request.BulkDeleteRequest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
 
 suspend fun ButtonInteractionCreateEvent.getCode(failureMessage: String): String? {
     return interaction.message.embeds.first().data.getFieldValue("code") ?: run {
@@ -68,30 +65,6 @@ suspend fun CommandRegistry.initEditCommand() {
             interaction.deferEphemeralResponse().respond {
                 content = "Stockpile updated"
             }
-        }
-    }
-}
-
-suspend fun CommandRegistry.initListCommand() {
-    val command = kord.createGlobalChatInputCommand("list", "Lists all stockpiles")
-    registerCommandListener(command.id) {
-        interaction.deferEphemeralResponse().respond {
-            content = storageAdapter.getStockpiles().toString()
-        }
-    }
-}
-
-suspend fun CommandRegistry.initClearCommand() {
-    val command = kord.createGlobalChatInputCommand("clear", "Clears the channel")
-
-    registerCommandListener(command.id) {
-        kord.rest.channel.bulkDelete(
-            interaction.channelId,
-            BulkDeleteRequest(interaction.channel.messages.map { it.id }.toList())
-        )
-
-        interaction.deferEphemeralResponse().respond {
-            content = "Channel cleared"
         }
     }
 }
