@@ -1,11 +1,14 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.konan.properties.loadProperties
 
 plugins {
     kotlin("jvm") version "1.8.10"
 }
 
 group = "de.chasenet"
-version = "1.0-SNAPSHOT"
+version = "1.0"
+
+val repository = loadProperties("local.properties")["repository"]
 
 repositories {
     mavenCentral()
@@ -23,6 +26,32 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.4.6")
 
     testImplementation(kotlin("test"))
+}
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "de.chasenet.foxhole.MainKt"
+    }
+    archiveVersion.set("")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+}
+
+val buildDocker = task("buildDocker") {
+    dependsOn(tasks.assemble)
+    exec {
+        commandLine("docker", "build", "-t", "$repository/${project.name}:${project.version}", ".")
+    }
+}
+
+task("pushDocker") {
+    dependsOn(buildDocker)
+    doLast {
+        exec {
+            commandLine("docker", "push", "$repository/${project.name}:${project.version}")
+        }
+    }
 }
 
 tasks.test {
