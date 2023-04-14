@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.chasenet"
-version = "1.0.1"
+version = "1.0.2"
 
 val repository = loadProperties("local.properties")["repository"]
 
@@ -42,8 +42,10 @@ tasks.jar {
 
 val buildDocker = task("buildDocker") {
     dependsOn(tasks.assemble)
-    exec {
-        commandLine("docker", "build", "-t", "$repository/${project.name}:${project.version}", ".")
+    doLast {
+        exec {
+            commandLine("docker", "build", "-t", "$repository/${project.name}:${project.version}", ".")
+        }
     }
 }
 
