@@ -44,7 +44,7 @@ suspend fun CommandRegistry.initEditCommand() {
     }
 
     registerCommandListener(command.id) {
-        val stockpile = storageAdapter.getStockpile(interaction.command.integers[COMMAND_CODE_FIELD].toString())
+        val stockpile = storageAdapter.getStockpile(interaction.channelId, interaction.command.integers[COMMAND_CODE_FIELD].toString())
         if (stockpile == null) {
             interaction.deferEphemeralResponse().respond {
                 content = "Stockpile to delete was not found"

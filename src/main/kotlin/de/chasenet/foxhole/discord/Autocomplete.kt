@@ -25,7 +25,7 @@ suspend fun AutoCompleteInteractionCreateEvent.hexAutocompleteListener() {
 
 suspend fun AutoCompleteInteractionCreateEvent.codeAutocompleteListener() {
     val prefix = interaction.command.strings["code"] ?: ""
-    val codes = AutocompleteDependencies.storageAdapter.getStockpiles().map { it.code }
+    val codes = AutocompleteDependencies.storageAdapter.getStockpiles(interaction.channelId).map { it.code }
 
     interaction.suggest(
         codes.partition { it.startsWith(prefix) }

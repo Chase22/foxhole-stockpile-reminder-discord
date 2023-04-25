@@ -3,7 +3,6 @@ Can either be supplies via environment variable or via the `src/main/resources/k
 
 | name            | type   | description                                    |
 |-----------------|--------|------------------------------------------------|
-| fostorChannelId | Long   | The id of the channel fostor should operate in |
 | kordToken       | String | The discord api token                          |
 
 ## Docker properties

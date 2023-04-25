@@ -47,7 +47,6 @@ class CommandRegistry(
         logger.info("Initializing Command registry")
         CoroutineScope(Dispatchers.IO).launch {
             commands.forEach { it() }
-
             kord.on<ChatInputCommandInteractionCreateEvent> {
                 meterRegistry.timer("command.invoked", "command", interaction.command.rootName).recordSuspend {
                     commandListeners[interaction.command.rootId]?.invoke(this)

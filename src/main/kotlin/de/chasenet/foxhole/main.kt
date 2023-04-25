@@ -2,7 +2,7 @@ package de.chasenet.foxhole
 
 import de.chasenet.foxhole.discord.CommandRegistry
 import de.chasenet.foxhole.storage.ChannelStorageAdapter
-import dev.kord.common.entity.Snowflake
+import dev.kord.common.entity.*
 import dev.kord.core.Kord
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
@@ -27,7 +27,6 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.environmentProperties
 import org.koin.fileProperties
-import kotlin.system.exitProcess
 
 @OptIn(PrivilegedIntent::class)
 suspend fun main() {
@@ -74,7 +73,6 @@ val kordModule = module {
     single {
         ChannelStorageAdapter(
             kord = get(),
-            channelId = getProperty<String>("fostorChannelId").toLong()
         )
     }
 
@@ -87,7 +85,6 @@ val kordModule = module {
             channelStorageAdapter = get(),
             clock = get(),
             kord = get(),
-            reminderChannelId = getProperty<String>("fostorChannelId").toLong(),
         )
     }.withOptions {
         createdAtStart()

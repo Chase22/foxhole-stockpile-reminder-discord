@@ -78,7 +78,7 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
             expireTime = clock.now().plus(RESERVATION_EXPIRATION_TIME)
         )
 
-        if (storageAdapter.getStockpile(stockpile.code) != null) {
+        if (storageAdapter.getStockpile(interaction.channelId, stockpile.code) != null) {
             interaction.deferEphemeralResponse().respond {
                 content = "There's already a stockpile with code ${stockpile.code}"
             }
@@ -101,20 +101,23 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
 
     registerButtonListener(REFRESH_BUTTON_CUSTOM_ID) {
         getCode("Something went wrong trying to refresh the stockpile")?.also { stockpileCode ->
-            val stockpile = storageAdapter.getStockpile(stockpileCode)!!.copy(
+            val stockpile = storageAdapter.getStockpile(interaction.channelId, stockpileCode)!!.copy(
                 expireTime = clock.now().plus(RESERVATION_EXPIRATION_TIME)
             )
 
-            storageAdapter.getReminder(stockpileCode)
+            println("Getting reminder")
+            storageAdapter.getReminder(interaction.channelId, stockpileCode)
                 ?.let { reminder ->
                     kord.rest.channel.deleteMessage(reminder.channelId, reminder.id, "Stockpile was refreshed")
                 }
 
+            println("Editing message reminder")
             interaction.message.edit {
                 embed {
                     embedStockpile(stockpile)
                 }
             }
+            println("Response")
             interaction.deferEphemeralResponse().respond {
                 content = "Refreshed stockpile ${stockpile.name}"
             }
@@ -123,7 +126,7 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
 
     registerButtonListener(DELETE_BUTTON_CUSTOM_ID) {
         getCode("Something went wrong trying to delete the stockpile")?.also {
-            val stockpile = storageAdapter.getStockpile(it)
+            val stockpile = storageAdapter.getStockpile(interaction.channelId, it)
 
             if (stockpile == null) {
                 interaction.deferEphemeralResponse().respond {
@@ -132,7 +135,7 @@ suspend fun CommandRegistry.initAddStockpileCommand() {
                 return@also
             }
 
-            storageAdapter.getReminder(it)
+            storageAdapter.getReminder(interaction.channelId, it)
                 ?.let { reminder ->
                     kord.rest.channel.deleteMessage(
                         reminder.channelId,
