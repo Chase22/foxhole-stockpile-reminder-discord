@@ -9,8 +9,10 @@ import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.on
 import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Timer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.slf4j.LoggerFactory
@@ -21,7 +23,7 @@ class CommandRegistry(
     val kord: Kord,
     val clock: Clock,
     val storageAdapter: ChannelStorageAdapter,
-    val meterRegistry: MeterRegistry
+    private val meterRegistry: MeterRegistry
 ) {
     private val logger = LoggerFactory.getLogger(CommandRegistry::class.java)
 
@@ -47,13 +49,18 @@ class CommandRegistry(
             commands.forEach { it() }
 
             kord.on<ChatInputCommandInteractionCreateEvent> {
-                meterRegistry.counter("command_invoked", "command", interaction.command.rootName)
-                commandListeners[interaction.command.rootId]?.invoke(this)
+                meterRegistry.timer("command.invoked", "command", interaction.command.rootName).recordSuspend {
+                    commandListeners[interaction.command.rootId]?.invoke(this)
+                }
             }
             kord.on<AutoCompleteInteractionCreateEvent> {
-                when(interaction.command.options.entries.first { it.value.focused }.key) {
-                    COMMAND_HEX_FIELD -> hexAutocompleteListener()
-                    COMMAND_CODE_FIELD -> codeAutocompleteListener()
+                interaction.command.options.entries.first { it.value.focused }.key.let {
+                    meterRegistry.timer("autocomplete.requested", "focusedKey", it).recordSuspend {
+                        when(it) {
+                            COMMAND_HEX_FIELD -> hexAutocompleteListener()
+                            COMMAND_CODE_FIELD -> codeAutocompleteListener()
+                        }
+                    }
                 }
             }
 
@@ -63,4 +70,13 @@ class CommandRegistry(
             }
         }
     }
+}
+
+suspend fun Timer.recordSuspend(block: suspend () -> Unit) {
+    val context = currentCoroutineContext()
+    record(Runnable {
+        CoroutineScope(context).launch {
+            block()
+        }
+    })
 }

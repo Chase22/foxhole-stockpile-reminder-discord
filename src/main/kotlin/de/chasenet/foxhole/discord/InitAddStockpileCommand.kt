@@ -40,7 +40,6 @@ fun EmbedBuilder.embedStockpile(stockpile: Stockpile) {
 }
 
 suspend fun CommandRegistry.initAddStockpileCommand() {
-
     val command = kord.createGlobalChatInputCommand(INIT_COMMAND_NAME, i18n.INIT_COMMAND_DESCRIPTION.default) {
         descriptionLocalizations = i18n.INIT_COMMAND_DESCRIPTION.translations
 

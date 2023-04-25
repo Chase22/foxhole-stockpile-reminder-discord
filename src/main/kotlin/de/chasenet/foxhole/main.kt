@@ -2,10 +2,15 @@ package de.chasenet.foxhole
 
 import de.chasenet.foxhole.discord.CommandRegistry
 import de.chasenet.foxhole.storage.ChannelStorageAdapter
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.binder.jvm.JvmInfoMetrics
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
+import io.micrometer.core.instrument.binder.logging.LogbackMetrics
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +27,7 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.environmentProperties
 import org.koin.fileProperties
+import kotlin.system.exitProcess
 
 @OptIn(PrivilegedIntent::class)
 suspend fun main() {
@@ -53,7 +59,12 @@ val kordModule = module {
     }
 
     single {
-        PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+        PrometheusMeterRegistry(PrometheusConfig.DEFAULT).also {
+            ProcessorMetrics().bindTo(it)
+            LogbackMetrics().bindTo(it)
+            JvmInfoMetrics().bindTo(it)
+            JvmMemoryMetrics().bindTo(it)
+        }
     }.bind(MeterRegistry::class)
 
     single {
